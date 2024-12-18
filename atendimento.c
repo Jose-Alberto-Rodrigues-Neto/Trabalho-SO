@@ -4,83 +4,12 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/time.h>
-
-//semaforos
+#include <sys/wait.h>
 #include <semaphore.h>
 #include <fcntl.h>
+#include "fila.h"
+#include "atendimento.h"
 
-// sem_create("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
-
-typedef struct {
-        int pid;
-        long int chegada;
-        int prioridade;
-        int tempo_atendimento;
-} Cliente;
-
-typedef struct {
-        Cliente cliente;
-        struct Node *proximo;
-} Node;
-
-typedef struct {
-        Node *front;
-        Node *rear;
-        int tamanho;
-} Fila;
-
-Fila* cria_fila() {
-        Fila *fila = (Fila*)malloc(sizeof(Fila));
-
-        fila->front = NULL;
-        fila->rear = NULL;
-        fila->tamanho = 0;
-
-        return fila;
-}
-
-int fila_vazia(Fila *fila) {
-        return fila->tamanho == 0;
-}
-
-void enfileirar(Fila *fila, Cliente cliente) {
-        Node *node = (Node*)malloc(sizeof(Node));
-        node->cliente = cliente;
-        node->proximo = NULL;
-
-        if(esta_vazia(fila)) {
-                fila->front = node;
-                fila->rear = node;
-        } else {
-                fila->rear->proximo = node;
-                fila->rear = node;
-        }
-        fila->tamanho++;
-}
-
-void desenfileirar(Fila *fila) {
-        if(esta_vazia(fila)) {
-                return NULL;
-        }
-
-        Node *aux = fila->front;
-        Cliente cliente = temp->cliente;
-
-        fila->front = fila->front->proximo;
-
-        if(fila->front == NULL) {
-                fila->rear == NULL;
-        }
-
-        free(temp);
-        fila->tamanho--;
-
-        return cliente;
-}
-
-sem_t *sem_atend, *sem_block;
-
-Fila *clientes;
 
 void *atendente(void *args) {
         struct timeval tv;
@@ -115,4 +44,125 @@ void *atendente(void *args) {
         fclose(analista);
 
         kill(apid, SIGCONT);
+}
+
+//estrutura dos argumentos passados para a thread recepcao
+typedef struct {
+    int num_clientes;
+    int paciencia;
+    long tempo_chegada;
+    Fila* baixa_prioridade;
+    Fila* alta_prioridade
+} RecepcaoArgs;
+
+void* recepcao( void* arg) {
+    //recebe os argumentos da função
+    RecepcaoArgs* args = (RecepcaoArgs*)arg;
+    
+    pid_t criarCliente;
+
+    int clientes = args->num_clientes;
+
+    Fila* fila_baixa_prioridade = args->baixa_prioridade;
+
+    Fila* fila_alta_prioridade = args->alta_prioridade;
+
+    srand(time(NULL));
+    
+    if(clientes == 0){
+        
+        int t = 1;
+        
+        while(t) {
+            criarCliente = fork();
+
+            if(criarCliente < 0){
+                printf("Erro ao criar o processo filho!\n");
+            }else if(criarCliente == 0){
+
+                //cria novo cliente
+                Cliente* novoCliente;
+
+                //atribui pid do cliente
+                novoCliente.pid = getpid();
+
+                //define prioridade randomicamente
+                int prioridade = rand();
+                if (prioridade % 2 == 0){
+                    //se par, adiciona prioridade baixa
+                    novoCliente.prioridade = args->paciencia;
+                }else{
+                    //se impar, adiciona prioridade alta
+                    novoCliente.prioridade = (args->paciencia)/2;
+                }
+                
+                long tempo_chegada = args->tempo_chegada;
+                tempo_chegada = clock();
+
+                novoCliente.chegada = tempo_chegada;
+
+                //cria processo cliente
+                execlp("./cliente", "cliente", NULL); 
+
+                //cria semáforo
+                sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
+
+                //adiciona cliente na lista
+                if(novoCliente.prioridade < args->paciencia){
+                    enfileirar(fila_alta_prioridade, novoCliente)
+                }else{
+                    enfileirar(fila_baixa_prioridade, novoCliente)
+                }
+                
+                printf("Um novo cliente com o número de processo: %d\nFoi criado com sucesso.", novoCliente.pid);
+            }
+        }
+
+    } else{
+
+        for(int i = 0; i < clientes; i++){
+            criarCliente = fork();
+
+            if(criarCliente < 0){
+                printf("Erro ao criar o processo filho!\n");
+            }else if(criarCliente == 0){
+                //cria novo cliente
+                Cliente* novoCliente;
+
+                //atribui pid do cliente
+                novoCliente.pid = getpid();
+
+                //define prioridade randomicamente
+                int prioridade = rand();
+                if (prioridade % 2 == 0){
+                    //se par, adiciona prioridade baixa
+                    novoCliente.prioridade = args->paciencia;
+                }else{
+                    //se impar, adiciona prioridade alta
+                    novoCliente.prioridade = (args->paciencia)/2;
+                }
+                
+                long tempo_chegada = args->tempo_chegada;
+                tempo_chegada = clock();
+
+                novoCliente.chegada = tempo_chegada;
+
+                //cria processo cliente
+                execlp("./cliente", "cliente", NULL); 
+
+                //cria semáforo
+                sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
+
+                //adiciona cliente na lista
+                if(novoCliente.prioridade < args->paciencia){
+                    enfileirar(fila_alta_prioridade, novoCliente)
+                }else{
+                    enfileirar(fila_baixa_prioridade, novoCliente)
+                }
+                
+                printf("Um novo cliente com o número de processo: %d\nFoi criado com sucesso.", novoCliente.pid);
+            }
+        }
+
+    }
 }
