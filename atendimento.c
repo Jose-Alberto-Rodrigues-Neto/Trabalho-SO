@@ -9,7 +9,7 @@
 #include <semaphore.h>
 #include <fcntl.h>
 
-// sem_create("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
+// sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
 
 typedef struct {
         int pid;
@@ -98,7 +98,7 @@ void *atendente(void *args) {
         fprintf(lng, "%d\n", cpid);
         fclose(lng);
 
-        sem_open(sem_block);
+        sem_post(sem_block);
         if(gettimeofday(&tv, NULL) != 0) {
                 perror("erro no gettimeofday\n");
                 return 1;
