@@ -17,6 +17,9 @@ int main(int argc, char **argv){
     Fila* baixa_prioridade;
     Fila* alta_prioridade;
 
+    alta_prioridade = cria_fila();
+    baixa_prioridade = cria_fila();
+
     //inicializando randomizador
     srand(time(NULL));
 

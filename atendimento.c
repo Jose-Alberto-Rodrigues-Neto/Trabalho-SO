@@ -10,6 +10,13 @@
 #include "fila.h"
 #include "atendimento.h"
 
+void satisfacao_cliente(long tempo_de_espera, long paciencia){
+    if(tempo_de_espera <= paciencia){
+        printf("Cliente satisfeito");
+    }else{
+        printf("Cliente insatisfeito");
+    }
+}
 
 void *atendente(void* arg) {
         //forma de pegar os argumentos do struct
@@ -76,7 +83,7 @@ void* recepcao( void* arg) {
         char input;
 
         while(1) {
-            input =
+            
             criarCliente = fork();
 
             if(criarCliente < 0){
@@ -84,7 +91,11 @@ void* recepcao( void* arg) {
             }else if(criarCliente == 0){
 
                 //cria novo cliente
-                Cliente* novoCliente;
+                Cliente* novoCliente = (Cliente*)malloc(sizeof(Cliente));
+                if (novoCliente == NULL) {
+                    perror("Erro ao alocar memória para novo cliente");
+                    exit(EXIT_FAILURE);
+                }
 
                 //atribui pid do cliente
                 novoCliente->pid = getpid();
@@ -130,7 +141,11 @@ void* recepcao( void* arg) {
                 printf("Erro ao criar o processo filho!\n");
             }else if(criarCliente == 0){
                 //cria novo cliente
-                Cliente* novoCliente;
+                Cliente* novoCliente = (Cliente*)malloc(sizeof(Cliente));
+                if (novoCliente == NULL) {
+                    perror("Erro ao alocar memória para novo cliente");
+                    exit(EXIT_FAILURE);
+                }
 
                 //atribui pid do cliente
                 novoCliente->pid = getpid();
