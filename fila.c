@@ -8,69 +8,53 @@
 #include <fcntl.h>
 #include "fila.h"
 
-typedef struct {
-        int pid;
-        long int chegada;
-        int prioridade;
-        int tempo_atendimento;
-} Cliente;
-
-typedef struct {
-        Cliente cliente;
-        struct Node *proximo;
-} Node;
-
-typedef struct {
-        Node *front;
-        Node *rear;
-        int tamanho;
-} Fila;
-
+// Criação da fila
 Fila* cria_fila() {
-        Fila *fila = (Fila*)malloc(sizeof(Fila));
-
-        fila->front = NULL;
-        fila->rear = NULL;
-        fila->tamanho = 0;
-
-        return fila;
+    Fila *fila = (Fila*)malloc(sizeof(Fila));
+    fila->front = NULL;
+    fila->rear = NULL;
+    fila->tamanho = 0;
+    return fila;
 }
 
+// Verifica se a fila está vazia
 int fila_vazia(Fila *fila) {
-        return fila->tamanho == 0;
+    return fila->tamanho == 0;
 }
 
-void enfileirar(Fila *fila, Cliente cliente) {
-        Node *node = (Node*)malloc(sizeof(Node));
-        node->cliente = cliente;
-        node->proximo = NULL;
+// Enfileirar um cliente na fila
+void enfileirar(Fila* fila, Cliente* cliente) {
+    Node* node = (Node*)malloc(sizeof(Node));
+    node->cliente = cliente;
+    node->proximo = NULL;
 
-        if(esta_vazia(fila)) {
-                fila->front = node;
-                fila->rear = node;
-        } else {
-                fila->rear->proximo = node;
-                fila->rear = node;
-        }
-        fila->tamanho++;
+    if (fila_vazia(fila)) {
+        fila->front = node;
+        fila->rear = node;
+    } else {
+        fila->rear->proximo = node;
+        fila->rear = node;
+    }
+    fila->tamanho++;
 }
 
-void desenfileirar(Fila *fila) {
-        if(esta_vazia(fila)) {
-                return NULL;
-        }
+// Desenfileirar um cliente da fila
+Cliente* desenfileirar(Fila *fila) {
+    if (fila_vazia(fila)) {
+        return NULL;
+    }
 
-        Node *aux = fila->front;
-        Cliente cliente = temp->cliente;
+    Node *aux = fila->front;
+    Cliente *cliente = aux->cliente;
 
-        fila->front = fila->front->proximo;
+    fila->front = fila->front->proximo;
 
-        if(fila->front == NULL) {
-                fila->rear == NULL;
-        }
+    if (fila->front == NULL) {
+        fila->rear = NULL;
+    }
 
-        free(temp);
-        fila->tamanho--;
+    free(aux);
+    fila->tamanho--;
 
-        return cliente;
+    return cliente;
 }

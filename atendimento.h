@@ -21,6 +21,12 @@ typedef struct {
     Fila* alta_prioridade;
 } RecepcaoArgs;
 
+// Estrutura dos argumentos passados para a thread atendente
+typedef struct {
+    int num_clientes;
+    Fila* fila;
+} AtendenteArgs;
+
 // Função do atendente
 void* atendente(void* args);
 

@@ -12,9 +12,19 @@
 
 
 void *atendente(void *args) {
+        //forma de pegar os argumentos do struct
+        AtendenteArgs* args = (AtendenteArgs*)arg;
+
+        int num_clientes = args->num_clientes;
+        
+        Fila* clientes = args->fila;
+
+        //semáforos
+        sem_t *sem_atend, *sem_block;
+
         struct timeval tv;
         long int wait_time;
-        Cliente cliente = clientes->front->cliente;
+        Cliente* cliente = clientes->front->cliente;
 
         pid_t cpid = cliente->pid;
         kill(cpid, SIGCONT);
@@ -30,7 +40,6 @@ void *atendente(void *args) {
         sem_open(sem_block);
         if(gettimeofday(&tv, NULL) != 0) {
                 perror("erro no gettimeofday\n");
-                return 1;
         }
 
         wait_time = tv.tv_usec - cliente->chegada;
@@ -47,13 +56,6 @@ void *atendente(void *args) {
 }
 
 //estrutura dos argumentos passados para a thread recepcao
-typedef struct {
-    int num_clientes;
-    int paciencia;
-    long tempo_chegada;
-    Fila* baixa_prioridade;
-    Fila* alta_prioridade
-} RecepcaoArgs;
 
 void* recepcao( void* arg) {
     //recebe os argumentos da função
@@ -71,9 +73,10 @@ void* recepcao( void* arg) {
     
     if(clientes == 0){
         
-        int t = 1;
-        
-        while(t) {
+        char input;
+
+        while(1) {
+            input =
             criarCliente = fork();
 
             if(criarCliente < 0){
@@ -84,22 +87,22 @@ void* recepcao( void* arg) {
                 Cliente* novoCliente;
 
                 //atribui pid do cliente
-                novoCliente.pid = getpid();
+                novoCliente->pid = getpid();
 
                 //define prioridade randomicamente
                 int prioridade = rand();
                 if (prioridade % 2 == 0){
                     //se par, adiciona prioridade baixa
-                    novoCliente.prioridade = args->paciencia;
+                    novoCliente->prioridade = args->paciencia;
                 }else{
                     //se impar, adiciona prioridade alta
-                    novoCliente.prioridade = (args->paciencia)/2;
+                    novoCliente->prioridade = (args->paciencia)/2;
                 }
                 
                 long tempo_chegada = args->tempo_chegada;
                 tempo_chegada = clock();
 
-                novoCliente.chegada = tempo_chegada;
+                novoCliente->chegada = tempo_chegada;
 
                 //cria processo cliente
                 execlp("./cliente", "cliente", NULL); 
@@ -108,13 +111,13 @@ void* recepcao( void* arg) {
                 sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
 
                 //adiciona cliente na lista
-                if(novoCliente.prioridade < args->paciencia){
-                    enfileirar(fila_alta_prioridade, novoCliente)
+                if(novoCliente->prioridade < args->paciencia){
+                    enfileirar(fila_alta_prioridade, novoCliente);
                 }else{
-                    enfileirar(fila_baixa_prioridade, novoCliente)
+                    enfileirar(fila_baixa_prioridade, novoCliente);
                 }
                 
-                printf("Um novo cliente com o número de processo: %d\nFoi criado com sucesso.", novoCliente.pid);
+                printf("Um novo cliente com o número de processo: %d\nFoi criado com sucesso.", novoCliente->pid);
             }
         }
 
@@ -130,22 +133,22 @@ void* recepcao( void* arg) {
                 Cliente* novoCliente;
 
                 //atribui pid do cliente
-                novoCliente.pid = getpid();
+                novoCliente->pid = getpid();
 
                 //define prioridade randomicamente
                 int prioridade = rand();
                 if (prioridade % 2 == 0){
                     //se par, adiciona prioridade baixa
-                    novoCliente.prioridade = args->paciencia;
+                    novoCliente->prioridade = args->paciencia;
                 }else{
                     //se impar, adiciona prioridade alta
-                    novoCliente.prioridade = (args->paciencia)/2;
+                    novoCliente->prioridade = (args->paciencia)/2;
                 }
                 
                 long tempo_chegada = args->tempo_chegada;
                 tempo_chegada = clock();
 
-                novoCliente.chegada = tempo_chegada;
+                novoCliente->chegada = tempo_chegada;
 
                 //cria processo cliente
                 execlp("./cliente", "cliente", NULL); 
@@ -154,13 +157,13 @@ void* recepcao( void* arg) {
                 sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
 
                 //adiciona cliente na lista
-                if(novoCliente.prioridade < args->paciencia){
-                    enfileirar(fila_alta_prioridade, novoCliente)
+                if(novoCliente->prioridade < args->paciencia){
+                    enfileirar(fila_alta_prioridade, novoCliente);
                 }else{
-                    enfileirar(fila_baixa_prioridade, novoCliente)
+                    enfileirar(fila_baixa_prioridade, novoCliente);
                 }
                 
-                printf("Um novo cliente com o número de processo: %d\nFoi criado com sucesso.", novoCliente.pid);
+                printf("Um novo cliente com o número de processo: %d\nFoi criado com sucesso.", novoCliente->pid);
             }
         }
 

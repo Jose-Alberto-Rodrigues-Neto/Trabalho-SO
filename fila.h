@@ -20,21 +20,21 @@ typedef struct {
 
 // Nó da fila
 typedef struct Node {
-    Cliente cliente;
-    struct Node *proximo;
+    Cliente* cliente;
+    struct Node* proximo;
 } Node;
 
 // Estrutura da fila
 typedef struct {
-    Node *front;
-    Node *rear;
+    Node* front;
+    Node* rear;
     int tamanho;
 } Fila;
 
 // Funções da fila
 Fila* cria_fila();
-int fila_vazia(Fila *fila);
-void enfileirar(Fila *fila, Cliente cliente);
-Cliente desenfileirar(Fila *fila);
+int fila_vazia(Fila* fila);
+void enfileirar(Fila* fila, Cliente* cliente);
+Cliente* desenfileirar(Fila* fila);
 
 #endif // FILA_H
