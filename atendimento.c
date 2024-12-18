@@ -26,13 +26,10 @@ void *atendente(void* arg) {
 
         Fila* clientes = args->fila;
 
-        //semáforos
-        sem_t *sem_atend, *sem_block;
-
         struct timeval tv;
         long int wait_time;
         Cliente* cliente = clientes->front->cliente;
-
+        pid_t analista;
         pid_t cpid = cliente->pid;
         kill(cpid, SIGCONT);
 
@@ -53,7 +50,14 @@ void *atendente(void* arg) {
 
         satisfacao_cliente(wait_time, cliente->prioridade);
         desenfileirar(clientes);
-
+        analista = fork();
+        if(analista < 0){
+            printf("Erro em criar processo analista!\n");
+        }else if(analista == 0){
+            execlp("./analista", "analista", NULL); 
+            //desbloquei processo analista
+            sem_open("/sem_block", O_CREAT | O_EXCL, 0644, 1);
+        }
         FILE *analista = fopen("analista.txt", "r");
         pid_t apid;
         fscanf(analista, "%d\n", &apid);

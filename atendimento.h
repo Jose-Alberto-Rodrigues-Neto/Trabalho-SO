@@ -25,6 +25,8 @@ typedef struct {
 typedef struct {
     int num_clientes;
     Fila* fila;
+    sem_t *sem_atend;
+    sem_t *sem_block;
 } AtendenteArgs;
 
 // Função do atendente
