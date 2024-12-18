@@ -11,6 +11,8 @@
 #include <pthread.h>
 #include <sys/wait.h>
 #include "recepcao.h"
+#include <semaphore.h>
+#include <fcntl.h>
 
 // Prioridade é o tempo máximo em 'ms' que os clientes, em geral, podem esperar.
 void startRecepcao(int clientes, int *prioridade, int *fila) {
@@ -31,7 +33,7 @@ void startRecepcao(int clientes, int *prioridade, int *fila) {
                 prioridade
                 printf("Eu sou o filho, processo: %d\n", processPID);
                 execlp("./cliente", "cliente", NULL); //cria processo cliente
-                //criar semaforo
+                sem_create("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
                 //criar forma de adicionar pid do cliente a lista
             }
         }
@@ -48,7 +50,7 @@ void startRecepcao(int clientes, int *prioridade, int *fila) {
                 prioridade
                 printf("Eu sou o filho, processo: %d\n", processPID);
                 execlp("./cliente", "cliente", NULL); //cria processo cliente
-                //criar semaforo
+                sem_create("/sem_atend", O_CREAT | O_EXECL, 0644, 1);
                 //criar forma de adicionar pid do cliente a lista
             }
         }
