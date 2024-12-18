@@ -11,12 +11,12 @@
 #include "atendimento.h"
 
 
-void *atendente(void *args) {
+void *atendente(void* arg) {
         //forma de pegar os argumentos do struct
         AtendenteArgs* args = (AtendenteArgs*)arg;
 
         int num_clientes = args->num_clientes;
-        
+
         Fila* clientes = args->fila;
 
         //semáforos
@@ -37,7 +37,7 @@ void *atendente(void *args) {
         fprintf(lng, "%d\n", cpid);
         fclose(lng);
 
-        sem_open(sem_block);
+        sem_open("/sem_block", O_CREAT | O_EXCL, 0644, 1);
         if(gettimeofday(&tv, NULL) != 0) {
                 perror("erro no gettimeofday\n");
         }

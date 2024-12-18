@@ -35,13 +35,13 @@ int main(int argc, char **argv){
 
     //iniciando argumentos do atendente, baixa prioridade
     AtendenteArgs* atendente_baixa_prioridade = malloc(sizeof(AtendenteArgs));
-    atendente_args->num_clientes = num_clientes;
-    atendente_args->fila = baixa_prioridade;
+    atendente_baixa_prioridade->num_clientes = num_clientes;
+    atendente_baixa_prioridade->fila = baixa_prioridade;
 
     //iniciando argumentos do atendente, alta prioridade
     AtendenteArgs* atendente_alta_prioridade = malloc(sizeof(AtendenteArgs));
-    atendente_args->num_clientes = num_clientes;
-    atendente_args->fila = alta_prioridade;
+    atendente_alta_prioridade->num_clientes = num_clientes;
+    atendente_alta_prioridade->fila = alta_prioridade;
 
     pthread_create(&recepcao_thread, NULL, recepcao, recepcao_args);
     pthread_create(&atendente_alta_prioridade_thread, NULL, atendente, atendente_alta_prioridade);
