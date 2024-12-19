@@ -23,8 +23,12 @@ void *atendente(void* arg) {
         AtendenteArgs* args = (AtendenteArgs*)arg;
 
         int num_clientes = args->num_clientes;
-
-        Fila* clientes = args->fila;
+        int fila_aux = 1
+        if(fila_aux == 1) {
+            Fila* clientes = args->alta_prioridade;
+        } else {
+            Fila* clientes = args->baixa_prioridade;
+        }
 
         struct timeval tv;
         long int wait_time;
@@ -35,13 +39,11 @@ void *atendente(void* arg) {
 
         sem_wait(sem_atend);
         sem_wait(sem_block);
-        sem_close(sem_block);
 
-        FILE *lng = fopen("lng.txt", "a");
+        FILE *lng = fopen("LNG.txt", "a");
         fprintf(lng, "%d\n", cpid);
         fclose(lng);
 
-        sem_open("/sem_block", O_CREAT | O_EXCL, 0644, 1);
         if(gettimeofday(&tv, NULL) != 0) {
                 perror("erro no gettimeofday\n");
         }
@@ -54,7 +56,7 @@ void *atendente(void* arg) {
         if(analista < 0){
             printf("Erro em criar processo analista!\n");
         }else if(analista == 0){
-            execlp("./analista", "analista", NULL); 
+            execlp("./analista", "analista", NULL);
             //desbloquei processo analista
             sem_open("/sem_block", O_CREAT | O_EXCL, 0644, 1);
         }
@@ -64,6 +66,12 @@ void *atendente(void* arg) {
         fclose(analista);
 
         kill(apid, SIGCONT);
+
+        if(fila_aux == 1) {
+            fila_aux == 0;
+        } else {
+            fila_aux == 1;
+        }
 }
 
 //estrutura dos argumentos passados para a thread recepcao
@@ -71,6 +79,9 @@ void *atendente(void* arg) {
 void* recepcao( void* arg) {
     //recebe os argumentos da função
     RecepcaoArgs* args = (RecepcaoArgs*)arg;
+
+    //cria semáforo
+    sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
     
     pid_t criarCliente;
 
@@ -122,8 +133,7 @@ void* recepcao( void* arg) {
                 //cria processo cliente
                 execlp("./cliente", "cliente", NULL); 
 
-                //cria semáforo
-                sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
+                
 
                 //adiciona cliente na lista
                 if(novoCliente->prioridade < args->paciencia){

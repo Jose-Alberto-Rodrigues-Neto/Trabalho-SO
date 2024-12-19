@@ -14,7 +14,7 @@ int main(int argc, char **argv){
         sem_t *sem_atend, *sem_block;
     
     //criando threads
-    pthread_t recepcao_thread, atendente_baixa_prioridade_thread, atendente_alta_prioridade_thread;
+    pthread_t recepcao_thread, atendente_thread;
 
     //fila
     Fila* baixa_prioridade;
@@ -39,27 +39,19 @@ int main(int argc, char **argv){
     recepcao_args->baixa_prioridade = baixa_prioridade;
     recepcao_args->alta_prioridade = alta_prioridade;
 
-    //iniciando argumentos do atendente, baixa prioridade
-    AtendenteArgs* atendente_baixa_prioridade = malloc(sizeof(AtendenteArgs));
-    atendente_baixa_prioridade->num_clientes = num_clientes;
-    atendente_baixa_prioridade->fila = baixa_prioridade;
-    atendente_baixa_prioridade->sem_atend = sem_atend;
-    atendente_baixa_prioridade->sem_block = sem_block;
-
     //iniciando argumentos do atendente, alta prioridade
-    AtendenteArgs* atendente_alta_prioridade = malloc(sizeof(AtendenteArgs));
-    atendente_alta_prioridade->num_clientes = num_clientes;
-    atendente_alta_prioridade->fila = alta_prioridade;
-    atendente_alta_prioridade->sem_atend = sem_atend;
-    atendente_alta_prioridade->sem_block = sem_block;
+    AtendenteArgs* atendenteArgs = malloc(sizeof(AtendenteArgs));
+    atendenteArgs->num_clientes = num_clientes;
+    atendenteArgs->fila_alta = alta_prioridade;
+    atendenteArgs->fila_baixa = baixa_prioridade;
+    atendenteArgs->sem_atend = sem_atend;
+    atendenteArgs->sem_block = sem_block;
 
     pthread_create(&recepcao_thread, NULL, recepcao, recepcao_args);
-    pthread_create(&atendente_alta_prioridade_thread, NULL, atendente, atendente_alta_prioridade);
-    pthread_create(&atendente_baixa_prioridade_thread, NULL, atendente, atendente_baixa_prioridade);
+    pthread_create(&atendente_thread, NULL, atendente, atendenteArgs);
 
     pthread_join(recepcao_thread, NULL);
-    pthread_join(atendente_alta_prioridade_thread, NULL);
-    pthread_join(atendente_baixa_prioridade_thread, NULL);
+    pthread_join(atendente_thread, NULL);
 
     return 0;
 }
