@@ -82,6 +82,7 @@ void* recepcao( void* arg) {
 
     //cria semáforo
     sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
+    sem_open("/sem_block", O_CREAT | O_EXCL, 0644, 1);
     
     pid_t criarCliente;
 
@@ -181,9 +182,6 @@ void* recepcao( void* arg) {
 
                 //cria processo cliente
                 execlp("./cliente", "cliente", NULL); 
-
-                //cria semáforo
-                sem_open("/sem_atend", O_CREAT | O_EXCL, 0644, 1);
 
                 //adiciona cliente na lista
                 if(novoCliente->prioridade < args->paciencia){
