@@ -10,49 +10,63 @@
 #include "fila.h"
 #include "atendimento.h"
 
-void satisfacao_cliente(long tempo_de_espera, long paciencia, pid_t pid) {
-    if (tempo_de_espera <= paciencia) {
-        printf("Cliente PID=%d satisfeito\n", pid);
+void satisfacao_cliente(long tempo_de_espera, long paciencia, pid_t pid, FILE* file) { 
+    if (((double)(tempo_de_espera) / CLOCKS_PER_SEC * 1000) <= paciencia) {
+        fprintf(file, "Cliente PID=%d satisfeito\n", pid);
     } else {
-        printf("Cliente PID=%d insatisfeito\n", pid);
+        fprintf(file, "Cliente PID=%d insatisfeito\n", pid);
     }
 }
 
-
 void *atendente(void* arg) {
     printf("ATENDENTE INICIADO\n");
-
     AtendenteArgs* args = (AtendenteArgs*)arg;
-    Fila* clientes;
-    int fila_aux = 1;
+
+    FILE* atendidos = fopen("atendidos.txt", "w"); // Modo append
+    if (!atendidos) {
+        perror("Erro ao abrir o arquivo atendidos.txt");
+        return NULL;
+    }
 
     while (1) {
-        clientes = (fila_aux == 1) ? args->fila_alta : args->fila_baixa;
+        Fila* clientes = NULL;
 
-        while (fila_vazia(clientes)) {
-            usleep(100000); // Espera até que a fila tenha clientes.
+        // Prioriza a fila alta
+        sem_wait(args->sem_atend); // Protege a leitura das filas
+        if (!fila_vazia(args->fila_alta)) {
+            clientes = args->fila_alta;
+        } else if (!fila_vazia(args->fila_baixa)) {
+            clientes = args->fila_baixa;
+        } else {
+            sem_post(args->sem_atend);
+            break; // Ambas as filas estão vazias
         }
+        sem_post(args->sem_atend);
 
+        // Desenfileira o cliente selecionado
         sem_wait(args->sem_atend);
         Cliente* cliente = desenfileirar(clientes);
         sem_post(args->sem_atend);
 
-        if (!cliente) continue;
+        if (!cliente) continue; // Ignora caso desenfileirar falhe
 
         printf("Atendendo cliente PID=%d\n", cliente->pid);
 
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        long wait_time = tv.tv_usec - cliente->chegada;
+        // Calcula o tempo de espera e registra satisfação
+        args->tempo_ini = clock();
+        long wait_time = args->tempo_ini - cliente->chegada;
 
-        satisfacao_cliente(wait_time, cliente->prioridade, cliente->pid);
+        satisfacao_cliente(wait_time, cliente->prioridade, cliente->pid, atendidos);
 
         free(cliente);
-
-        fila_aux = (fila_aux == 1) ? 0 : 1;
     }
 
+    fclose(atendidos);
+    printf("ATENDENTE FINALIZADO\n");
+    return NULL;
 }
+
+
 
 
 //estrutura dos argumentos passados para a thread recepcao

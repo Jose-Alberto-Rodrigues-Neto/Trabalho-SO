@@ -77,6 +77,7 @@ int main(int argc, char **argv){
     atendenteArgs->fila_baixa = baixa_prioridade;
     atendenteArgs->sem_atend = &sem_atend_local;
     atendenteArgs->sem_block = &sem_block_local;
+    atendenteArgs->tempo_ini = tempo_ini;
 
     pthread_create(&recepcao_thread, NULL, recepcao, recepcao_args);
     sleep(1); //espera 2 segundos antes de ligar atendente

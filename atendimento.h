@@ -26,6 +26,7 @@ typedef struct {
 // Estrutura dos argumentos passados para a thread atendente
 typedef struct {
     int num_clientes;
+    long tempo_ini;
     Fila* fila_baixa;
     Fila* fila_alta;
     sem_t *sem_atend;
