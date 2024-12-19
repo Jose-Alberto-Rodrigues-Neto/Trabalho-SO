@@ -19,6 +19,8 @@ typedef struct {
     long tempo_chegada;
     Fila* baixa_prioridade;
     Fila* alta_prioridade;
+    sem_t *sem_atend;
+    sem_t *sem_block;
 } RecepcaoArgs;
 
 // Estrutura dos argumentos passados para a thread atendente
